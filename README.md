@@ -6,6 +6,8 @@ Sistema de recargas con protección anti-abuso que utiliza rate limiting para pr
 
 - Backend NestJS ejecutándose en puerto 3000
 
+<https://github.com/larturi/poc-recargas-antiabuso-nest>
+
 ## Instalación y Ejecución
 
 1. Instalar dependencias:
