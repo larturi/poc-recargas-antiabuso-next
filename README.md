@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# POC Rate Limit - Sistema Anti-Abuso para Recargas
 
-## Getting Started
+Sistema de recargas con protección anti-abuso que utiliza rate limiting para prevenir solicitudes maliciosas.
 
-First, run the development server:
+## Prerequisitos
+
+- Node.js instalado
+- Backend NestJS ejecutándose en puerto 3000
+
+## Instalación y Ejecución
+
+1. Instalar dependencias:
+
+```bash
+npm install
+```
+
+2. Iniciar el servidor de desarrollo:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. Abrir [http://localhost:3001](http://localhost:3001) en el navegador
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Funcionamiento
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Formulario de Recargas
 
-## Learn More
+La aplicación presenta un formulario simple donde el usuario puede:
 
-To learn more about Next.js, take a look at the following resources:
+- Ingresar un número de línea telefónica (ej: 1123456789)
+- Hacer clic en "Validar" para enviar la solicitud al backend
+- Ver el resultado de la validación en pantalla
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Sistema de Identificación con FingerprintJS
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Para implementar el rate limiting, la aplicación utiliza **FingerprintJS** (`@fingerprintjs/fingerprintjs`) que:
 
-## Deploy on Vercel
+- Genera un ID único del visitante basado en características del navegador y dispositivo
+- Este ID se obtiene automáticamente al cargar la página usando `FingerprintJS.load()`
+- El `visitorId` se envía junto con cada solicitud POST al backend
+- Permite al backend identificar de manera única a cada usuario sin requerir login
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Rate Limiting
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+El backend NestJS implementa las siguientes reglas:
+
+- **Límite**: 10 solicitudes por minuto por visitante único
+- **Bloqueo**: 15 minutos de suspensión tras superar el límite
+- **Almacenamiento**: Redis para contadores y bloqueos temporales
+
+### Flujo de la Aplicación
+
+1. Usuario accede a `/phone`
+2. FingerprintJS genera un `visitorId` único
+3. Usuario completa el formulario y envía
+4. Se hace POST a `http://localhost:3000/api/validar-linea` con:
+   - `numeroLinea`: número ingresado
+   - `visitorId`: identificador único del browser
+5. Backend valida rate limit y responde
+6. Frontend muestra el resultado
+
+## Requisitos del Backend
+
+Asegurarse de que el backend NestJS esté ejecutándose en puerto 3000 con:
+
+- Servicio de rate limiting configurado
+- Redis funcionando
+- Endpoint `/api/validar-linea` disponible
