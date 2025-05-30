@@ -67,7 +67,10 @@ export default function PhonePage() {
         </form>
 
         {resultado && (
-          <div className='mt-6 text-sm text-center text-gray-700 bg-gray-100 p-3 rounded-lg border border-gray-200'>
+          <div
+            id='resultado'
+            className='mt-6 text-sm text-center text-gray-700 bg-gray-100 p-3 rounded-lg border border-gray-200'
+          >
             {resultado}
           </div>
         )}
